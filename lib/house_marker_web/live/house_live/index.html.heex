@@ -1,0 +1,54 @@
+<div>
+	<.header>
+  		Listing Houses
+		<%!-- <:actions> --%>
+		<br/><br/>
+			<.link patch={~p"/houses/new"}>
+			<.button>Add New House</.button>
+			</.link>
+		<%!-- </:actions> --%>
+	</.header>
+</div>
+<div class="grid grid-cols-2 mt-5">
+	<div class="h-[80%] overflow-auto overflow-x-hidden w-100">
+		<.table
+			id="houses"
+			rows={@streams.houses}
+		>
+			<:col :let={{_uuid, house}} label="Name"><%= house.name %></:col>
+			<:col :let={{_uuid, house}} label="Address"><%= house.address %></:col>
+			<:action :let={{_uuid, house}}>
+				<.link patch={~p"/houses/#{house}/edit"}>Edit</.link>
+				<button phx-click="show_on_map" phx-value-id={house.uuid}>Show on map</button>
+			</:action>
+		</.table>
+	</div>
+	<div>
+		<center>
+			<%= if !is_nil(@active_on_map) do %>
+				<iframe
+					width="600"
+					height="450"
+					style="border:0"
+					loading="lazy"
+					allowfullscreen
+					referrerpolicy="no-referrer-when-downgrade"
+					src={@active_on_map}>
+					</iframe>
+			<% else %>	
+				<h4>No Houses Found</h4>
+			<% end %>
+		</center>
+	</div>
+</div>
+
+<.modal :if={@live_action in [:new, :edit]} id="house-modal" show on_cancel={JS.patch(~p"/houses")}>
+  <.live_component
+    module={HouseMarkerWeb.HouseLive.FormComponent}
+    id={@house.uuid || :new}
+    title={@page_title}
+    action={@live_action}
+    house={@house}
+    patch={~p"/houses"}
+  />
+</.modal>
